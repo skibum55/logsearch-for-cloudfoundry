@@ -110,7 +110,15 @@ $logger.info("Defaults data to upload:\n#{upload_data}")
 
 ## Upload generated objects
 
-result = `curl http://<%= p('elasticsearch.host') %>:<%= p('elasticsearch.port') %>/_bulk -d '#{upload_data.to_s}'`
+<%
+  elasticsearch_addrs = nil
+  respond_to?(:if_link) && if_link("elasticsearch") do |elasticsearch|
+    elasticsearch_addrs = link('elasticsearch').instances.first.address
+  end.else do
+    elasticsearch_addrs = p("elasticsearch.host")
+  end
+%>
+result = `curl http://<%= elasticsearch_addrs %>:<%= p('elasticsearch.port') %>/_bulk -d '#{upload_data.to_s}'`
 log_status("=======")
 $logger.info("======= Result of uploading defaults: #{result}")
 puts("======= Result of uploading defaults: #{process_bulk_query_result(result)}")
@@ -125,7 +133,7 @@ log_status("--------------------------------------------------")
 log_status("======= Files to upload:")
 <% p("kibana_objects.upload_data_files").each do |object| %>
 log_status("<%= object %>")
-result = `cat <%= object %> | curl --data-binary @- http://<%= p('elasticsearch.host') %>:<%= p('elasticsearch.port') %>/_bulk`
+result = `cat <%= object %> | curl --data-binary @- http://<%= elasticsearch_addrs %>:<%= p('elasticsearch.port') %>/_bulk`
 $logger.info("======= Result of uploading '<%= object %>': #{result}")
 puts "======= Result of uploading '<%= object %>': #{process_bulk_query_result(result)}"
 <% end %>

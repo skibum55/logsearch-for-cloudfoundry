@@ -7,7 +7,7 @@ jobs:
 - name: ingestor
   templates:
   - (( merge ))
-  - {name: ingestor_cloudfoundry-firehose, release: logsearch-for-cloudfoundry}
+  - {name: ingestor_cloudfoundry-firehose, release: logsearch-for-cloudfoundry, consumes: {ls-router: nil}}
 
 - name: parser
   templates:
@@ -55,7 +55,7 @@ jobs:
 - name: smoke-tests
   templates:
   - (( replace ))
-  - { release: logsearch-for-cloudfoundry, name: smoke-tests }
+  - { release: logsearch-for-cloudfoundry, name: smoke-tests, consumes: {elasticsearch: nil} }
   lifecycle: errand
   instances: 1
   release: logsearch-for-cloudfoundry
@@ -68,7 +68,7 @@ jobs:
   release: logsearch-for-cloudfoundry
   instances: 1
   templates:
-  - {name: upload-kibana-objects, release: logsearch-for-cloudfoundry}
+    - {name: upload-kibana-objects, release: logsearch-for-cloudfoundry, consumes: {elasticsearch: nil}}
   networks:
   - name: default
   resource_pool: errand

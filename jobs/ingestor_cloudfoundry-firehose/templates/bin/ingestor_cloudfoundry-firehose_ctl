@@ -22,14 +22,22 @@ case $1 in
        sysctl -p
     fi
 
+    <%
+    haproxy_addrs = nil
+    respond_to?(:if_link) && if_link("ls-router") do |haproxy|
+      haproxy_addrs = link('ls-router').instances.first.address
+    end.else do
+      haproxy_addrs = p("syslog.host")
+    end
+    %>
     echo "Waiting 1m for syslog ingestor to accept connections..."
     n=0
     until [ $n -ge 12 ]
     do
       if [[ -x `which nc` ]] && nc -h 2>&1 | grep -q  -- '-z';then
-        nc -4 -z -v <%= p("syslog.host") %> <%= p("syslog.port") %> 2>&1 && break
+        nc -4 -z -v <%= haproxy_addrs %> <%= p("syslog.port") %> 2>&1 && break
       else
-        (echo > /dev/tcp/<%= p("syslog.host") %>/<%= p("syslog.port") %>) > \
+        (echo > /dev/tcp/<%= haproxy_addrs %>/<%= p("syslog.port") %>) > \
           /dev/null 2>&1 && echo "OPEN" || echo "CLOSED" | grep -q OPEN && break
       fi
       n=$[$n+1]
@@ -55,7 +63,7 @@ case $1 in
         --client-id=<%= p("cloudfoundry.firehose_client_id") %> \
         --client-secret=<%= p("cloudfoundry.firehose_client_secret") %> \
         --syslog-protocol=<%= p("syslog.protocol") %>\
-        --syslog-server=<%= p("syslog.host") %>:<%= p("syslog.port") %>\
+        --syslog-server=<%= haproxy_addrs %>:<%= p("syslog.port") %>\
         --events=<%= p("cloudfoundry.firehose_events") %> \
         --subscription-id=<%= p("cloudfoundry.firehose_subscription_id") %> \
         --boltdb-path=$TMP_DIR/firehose-to-syslog.cache.db \

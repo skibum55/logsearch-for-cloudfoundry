@@ -86,6 +86,11 @@ templates:
   kibana-objects/visualization/Platform-UAA-Audit-events-by-type.json.erb: kibana-objects/visualization/Platform-UAA-Audit-events-by-type.json
   kibana-objects/visualization/Platform-UAA-Audit-event-types.json.erb: kibana-objects/visualization/Platform-UAA-Audit-event-types.json
 
+consumes:
+- name: elasticsearch
+  type: elasticsearch
+  optional: true
+
 properties:
   kibana_objects.upload_patterns:
     description: "List of glob patterns of Kibana objects to upload"
@@ -103,6 +108,7 @@ properties:
     description: Elasticsearch host
   elasticsearch.port:
     description: Elasticsearch port
+    default: 9200
 
   cloudfoundry.firehose_events:
     description: "Comma seperated list of events you would like to get. Valid options are CounterEvent,Error,HttpStartStop,LogMessage,ValueMetric,ContainerMetric"
